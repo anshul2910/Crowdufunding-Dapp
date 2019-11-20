@@ -45,6 +45,14 @@
   ],
   "description": "## Project setup ``` npm install ```",
   "main": "babel.config.js",
-  "author": "",
-  "license": "ISC"
+  "author": "Anshul Chaudhary",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anshul2910/Crowdufunding-Dapp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/anshul2910/Crowdufunding-Dapp/issues"
+  },
+  "homepage": "https://github.com/anshul2910/Crowdufunding-Dapp#readme"
 }
