@@ -1,8 +1,19 @@
+<<<<<<< HEAD
 pragma solidity^0.5.4; //solidity compiler version 
 import 'https://github.com/OpenZeppelin/openzeppelin-solidity/contracts/math/SafeMath.sol'; //importing openzeppelin's SafeMath function.
 
 contract Crowdfunding {
 using SafeMath for uint256; 
+=======
+pragma solidity 0.5.11;
+
+import 'https://github.com/OpenZeppelin/openzeppelin-solidity/contracts/math/SafeMath.sol';
+
+contract Crowdfunding {
+using SafeMath for uint256; 
+
+    Project[] private projects; //Array to store list of existing projects4
+>>>>>>> 8392d5257ef397b16e852731979435606f0ecde2
 
     Project[] private projects; //Array to store list of existing projects4
     event ProjectStarted( //event that will be emitted everytime a new project is strated.
@@ -16,7 +27,7 @@ using SafeMath for uint256;
 
     function startProject(
         string calldata title,  //title of the project.
-        string calldata description, //Description of the project.
+        string calldata description, //description of the project.
         uint durationInDays, //number of days for which project would be open for funding.
         uint amountToRaise   //total amount of money to be raised for the funding.
 
@@ -25,7 +36,6 @@ using SafeMath for uint256;
         uint raiseUntil = now.add(durationInDays.mul(1 days));
         Project newProject = new Project(msg.sender, title, description, raiseUntil, amountToRaise);
         projects.push(newProject);
-    
         emit ProjectStarted( //Triggering the event.
             address(newProject),
             msg.sender,
@@ -125,6 +135,7 @@ function fundingStatus() public { //function to change the project's current sta
             state = State.Expired;
         }
         completeAt = now;
+<<<<<<< HEAD
     }
 /* 
 function payOut internal inState(State.Successful) returns (bool) { //fuction to give recieved funds to the project starter.
@@ -145,6 +156,14 @@ function payOut() internal inState(State.Successful) returns (bool) {
         uint256 totalRaised = currentBalance;
         currentBalance = 0;
 
+=======
+    }
+ 
+function payOut() internal inState(State.Successful) returns (bool) {
+        uint256 totalRaised = currentBalance;
+        currentBalance = 0;
+
+>>>>>>> 8392d5257ef397b16e852731979435606f0ecde2
         if (creator.send(totalRaised)) {
             emit CreatorPaid(creator);
             return true;
@@ -172,7 +191,10 @@ function getRefund() public inState(State.Expired) returns (bool) { //function t
         return true;
     }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 8392d5257ef397b16e852731979435606f0ecde2
 function getDetails() public view returns //function to retrieve the values of project.
 (
     address payable projectStarter,
