@@ -1,13 +1,11 @@
-pragma solidity 0.5.4;
-import 'https://github.com/OpenZeppelin/openzeppelin-solidity/contracts/math/SafeMath.sol';
+pragma solidity^0.5.4; //solidity compiler version 
+import 'https://github.com/OpenZeppelin/openzeppelin-solidity/contracts/math/SafeMath.sol'; //importing openzeppelin's SafeMath function.
 
 contract Crowdfunding {
-    
-    using SafeMath for uint256; 
+using SafeMath for uint256; 
+
     Project[] private projects; //Array to store list of existing projects4
-
     event ProjectStarted( //event that will be emitted everytime a new project is strated.
-
         address contractAddress,
         address projectStarter,
         string projectTitle,
@@ -73,7 +71,7 @@ contract Project {
     event fundingRecieved (address contributor, uint amount, uint currentTotal);
     //event to be emitted whenever a funding will be recieved.
 
-    event creatorPaid (address recipient);
+    event CreatorPaid (address recipient);
     //event to be emitted whenever project starter has recieved the funds.
 
     modifier inState(State _state){ //function modifier to check the current state
@@ -86,6 +84,7 @@ contract Project {
     modifier isCreator() { //function modifier to check if function caller is creator.
 
         require(msg.sender == creator);
+        _;
 
     }
 
@@ -93,13 +92,13 @@ contract Project {
         address payable projectStarter,
         string memory projectTitle,
         string memory projectDesc,
-        uint fundRaisingDeadine,
+        uint fundRaisingDeadline,
         uint goalAmount
 
     ) public {
 
         creator = projectStarter;
-        title = projectTilte;
+        title = projectTitle;
         description = projectDesc;
         amountGoal = goalAmount;
         raiseBy = fundRaisingDeadline;
@@ -107,14 +106,90 @@ contract Project {
     }
 
 
-    function contribute() external inState(State.Fundraising) payable {
+function contribute() external inState(State.Fundraising) payable { //function to fund a certain project.
+
 
         require(msg.sender != creator); //creator can't raise fund for himself.
-        contributions[msg.sender] = con
-
-
+        contributions[msg.sender] = contributions[msg.sender].add(msg.value);
+        currentBalance = currentBalance.add(msg.value);
+        emit fundingRecieved(msg.sender, msg.value, currentBalance);
+        fundingStatus();
     }
 
-    
+
+function fundingStatus() public { //function to change the project's current state depending on the conditions.
+        if (currentBalance >= amountGoal) {
+            state = State.Successful;
+            payOut();
+        } else if (now > raiseBy)  {
+            state = State.Expired;
+        }
+        completeAt = now;
+    }
+/* 
+function payOut internal inState(State.Successful) returns (bool) { //fuction to give recieved funds to the project starter.
+    uint256 totalRaised = currentBalance;
+    currentBalance = 0;
+    if (creator.send(totalRaised)) {
+        emit creatorPaid(creator);
+        return true;
+    } else {
+        currentBalance = totalRaised;
+        state = State.Successful;
+    }
+    return false;
+}
+*/
+
+function payOut() internal inState(State.Successful) returns (bool) {
+        uint256 totalRaised = currentBalance;
+        currentBalance = 0;
+
+        if (creator.send(totalRaised)) {
+            emit CreatorPaid(creator);
+            return true;
+        } else {
+            currentBalance = totalRaised;
+            state = State.Successful;
+        }
+
+        return false;
+    }
+
+function getRefund() public inState(State.Expired) returns (bool) { //function to return the funds to respective supporters in case the project is expired.
+        require(contributions[msg.sender] > 0);
+
+        uint amountToRefund = contributions[msg.sender];
+        contributions[msg.sender] = 0;
+
+        if (!msg.sender.send(amountToRefund)) {
+            contributions[msg.sender] = amountToRefund;
+            return false;
+        } else {
+            currentBalance = currentBalance.sub(amountToRefund);
+        }
+
+        return true;
+    }
+
+
+function getDetails() public view returns //function to retrieve the values of project.
+(
+    address payable projectStarter,
+    string memory projectTitle,
+    string memory projectDesc,
+    uint256 deadline,
+    State currentState,
+    uint256 currentAmount,
+    uint256 goalAmount
+) {
+    projectStarter = creator;
+    projectTitle = title;
+    projectDesc = description;
+    deadline = raiseBy;
+    currentState = state;
+    currentAmount = currentBalance;
+    goalAmount = amountGoal;
+ }
 }
 
